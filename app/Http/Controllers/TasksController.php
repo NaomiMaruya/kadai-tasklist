@@ -11,7 +11,8 @@ class TasksController extends Controller
     public function index()
     {
         if (\Auth::check()) {
-            $tasks = Task::all();
+            $user = \Auth::user();
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
 
             // メッセージ一覧ビューでそれを表示
             return view('tasks.index', [
@@ -25,7 +26,6 @@ class TasksController extends Controller
     {
         $task = new Task;
 
-        // メッセージ作成ビューを表示
         return view('tasks.create', [
             'task' => $task,
         ]);
@@ -38,9 +38,11 @@ class TasksController extends Controller
             'content' => 'required|max:255',
         ]);
         
+        
         $task = new Task;
         $task->status = $request->status;
         $task->content = $request->content;
+        $task->user_id = \Auth::id();
         $task->save();
 
         // トップページへリダイレクトさせる
@@ -48,8 +50,12 @@ class TasksController extends Controller
     }
 
     public function show($id)
-    {
+    {   
         $task = Task::findOrFail($id);
+
+        if (\Auth::id() !== $task->user_id) {
+            return redirect();
+        }
 
         // メッセージ詳細ビューでそれを表示
         return view('tasks.show', [
