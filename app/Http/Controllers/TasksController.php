@@ -10,12 +10,15 @@ class TasksController extends Controller
 {
     public function index()
     {
-        $tasks = Task::all();
+        if (\Auth::check()) {
+            $tasks = Task::all();
 
-        // メッセージ一覧ビューでそれを表示
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
+            // メッセージ一覧ビューでそれを表示
+            return view('tasks.index', [
+                'tasks' => $tasks,
+            ]);
+        }
+        return view('welcome');
     }
 
     public function create()
